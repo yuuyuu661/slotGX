@@ -1,0 +1,33 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS wallets (
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  coins BIGINT NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS coin_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  delta BIGINT NOT NULL,
+  reason TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS login_audit (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  username TEXT,
+  ok BOOLEAN NOT NULL,
+  ip TEXT,
+  ua TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
